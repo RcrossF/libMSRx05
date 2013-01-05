@@ -1,7 +1,7 @@
-import libMSR605
+#!/usr/bin/env python2
 
-
-reader = libMSR605.msr605('/dev/ttyUSB0')
+import libMSRx05 as msr
+reader = msr.x05('/dev/ttyUSB0')
 
 #print "setting 5 5 5 bpc"
 #reader.setBitsPerCharacter([5,5,5])
@@ -10,8 +10,8 @@ print "Firmware Version: " + reader.getFirmwareVersion()
 print "Device Model: " + reader.getDeviceModel()
 
 
-print "Write something"
-reader.writeIsoHiCo(['xxx  ','580','009'])
+#print "Write something"
+#reader.writeIsoHiCo(['xxx  ','580','009'])
 print reader.readIso()
 #print "RAWW Read, Baby!"
 #a = reader.readRaw();

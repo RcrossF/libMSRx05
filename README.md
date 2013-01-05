@@ -1,4 +1,4 @@
-msr605
+libMSRx05
 ======
 
-interfaces the msr605 using python
+Pyhton library for interfacing MSRx05 and MSRx06 Magnetic Stripe Card Readers/Writers

@@ -1,13 +1,13 @@
-# libMSR605.py
-# written by Louis Bodnar
-# end of september 2012
+# libMSRx05.py
+#
+# Library for accesing MSR205, MSR206, MSR505, MSR605, MSR606 and compatible MagStripe RW devices
+#
+# by Louis Bodnar, end of september 2012
+# rework by Kirils Solovjovs, 2013
 
 import serial
 import binascii
 import time
-
-
-
 
 ESC = '\x1B'
 FS = '\x1C'
@@ -25,9 +25,7 @@ RED_LED_ON = '\x1B\x85'
 SENSOR_TEST = '\x1B\x86'
 RAM_TEST = '\x1B\x87'
 
-
-
-class msr605:
+class x05:
   def __init__(self, port):
     # open port
     self.__s = serial.Serial(port, 9600)

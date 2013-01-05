@@ -13,10 +13,6 @@ import time
 ESC = '\x1B'
 ACK = '\x1B\x30'
 
-# TODO:
-#higher level raw processing functions
-
-
 class x05:
   def __init__(self, port, safetywarnings=False):
     # open port
@@ -310,7 +306,7 @@ class x05:
      rev += chr(sum(1<<(7-i) for i in range(8) if ord(text[ti])>>i&1))
    return rev
 
-  def writeRaw(self,data):
+  def writeRaw(self,data,reversed=True):
     self.__warn()
     fcount = 0
     while(len(data)<3):
@@ -326,7 +322,7 @@ class x05:
 
     command = ESC+'\x6E'+ESC+'\x73'
     for i in [0,1,2]:
-      command += ESC+chr(i+1)+chr(len(data[i]))+self.__reverseStringBits(data[i])
+      command += ESC+chr(i+1)+chr(len(data[i]))+(self.__reverseStringBits(data[i]) if reversed else data[i])
     command += '?\x1C'
 
     self.__s.write(command)

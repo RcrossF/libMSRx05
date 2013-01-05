@@ -25,7 +25,7 @@ print "[LeadingZeros] Track1&3: "+border+"mm, Track2: "+middle+"mm"
 
 device.reset()
 
-#print device.setBPC([8,8,8]);
+#print device.setBPC([8,6,6]);
 #print device.setBPI([1,0,1]);
 #print device.setLZ([61,22]);
 
@@ -39,9 +39,9 @@ a = device.readRaw()
 print "Please swipe the card to be written...",
 sys.stdout.flush()
 
-#this erases the tracks which are empty on the original
+this erases the tracks which are empty on the original
 if (device.eraseTracks(map(lambda x: len(x)==0,a))):
-  print "again..."
+  print "again...",
   sys.stdout.flush()
 if device.writeRaw(a): print 'ok'
 else: print 'failed'
@@ -52,3 +52,4 @@ print device.readISO()
 #print device.writeRawText(['123','123','123'],[1,1,1],[5,5,5],[0,0,0])
 
 device.close()
+

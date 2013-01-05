@@ -39,7 +39,7 @@ a = device.readRaw()
 print "Please swipe the card to be written...",
 sys.stdout.flush()
 
-this erases the tracks which are empty on the original
+#this erases the tracks which are empty on the original
 if (device.eraseTracks(map(lambda x: len(x)==0,a))):
   print "again...",
   sys.stdout.flush()

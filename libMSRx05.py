@@ -13,15 +13,13 @@ import time
 ESC = '\x1B'
 ACK = '\x1B\x30'
 
-# TODO
-#
-#Commands not yet implented:
-#WRITE = '\x1B\x6E'
+# TODO:
 #higher level raw processing functions
 
 class x05:
-  def __init__(self, port):
+  def __init__(self, port, safetywarnings=False):
     # open port
+    self.__safetywarnings=safetywarnings
     self.__s = serial.Serial(port, 9600)
     self.reset()
     self.testComm()
@@ -54,6 +52,10 @@ class x05:
       if (b == byte):
         return d
       d += b
+
+  def __warn(self):
+    if(self.__safetywarnings):
+      print "WARNING! NEXT SWIPE WILL WRITE TO CARD WITH "+ ("HIGH" if self.getCo() else "LOW") + " COERCIVITY"
 
   def getFirmwareVersion(self):
     self.__s.write('\x1B\x76')
@@ -127,7 +129,8 @@ class x05:
       pass
     if (select == 0):
       return False
-    # [sic] writing \x01 to erase just Track1 works as well as writing \x00
+    self.__warn()
+    # [sic] writing \x01 works as well as \x00 to erase only Track1
     self.__s.write('\x1B\x63'+chr(select))
     return self.__expect(ACK,True)*select
 
@@ -229,7 +232,7 @@ class x05:
 
 
   def writeISO(self, data):
-    print "WARNING - WRITING MODE, coerc="+ ("high" if self.getCo() else "low") #DEBUG FIXME
+    self.__warn()
     fcount = 0
     while(len(data)<3):
       data.append('')
@@ -278,6 +281,7 @@ class x05:
 
 
   def readRaw(self):
+
     self.__s.write('\x1B\x6D')
     self.__expect('\x1B\x73')
 
@@ -298,4 +302,37 @@ class x05:
       data.insert(0,self.__status(result))
       return data # ERRORCODE, ERRORSTRING, TR1, TR2, TR3
 
+  def __reverseStringBits(self,text):
+   rev = ""
+   for ti in range(len(text)):
+     rev += chr(sum(1<<(7-i) for i in range(8) if ord(text[ti])>>i&1))
+   return rev
 
+  def writeRaw(self,data):
+    self.__warn()
+    fcount = 0
+    while(len(data)<3):
+      data.append('')
+
+    for i in [0,1,2]:
+      if data[i] is None: data[i]=''
+      if (len(data[i])>0):
+        fcount += 1
+
+    if not fcount:
+      raise Exception("Nothing to write")
+
+    command = ESC+'\x6E'+ESC+'\x73'
+    for i in [0,1,2]:
+      command += ESC+chr(i+1)+chr(len(data[i]))+self.__reverseStringBits(data[i])
+    command += '?\x1C'
+
+    self.__s.write(command)
+    self.__expect(ESC)
+
+    # check status
+    status=self.__s.read()
+    if (status ==  '0'):
+      return True
+    else:
+      return self.__status(status)

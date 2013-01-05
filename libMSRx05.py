@@ -16,6 +16,7 @@ ACK = '\x1B\x30'
 # TODO:
 #higher level raw processing functions
 
+
 class x05:
   def __init__(self, port, safetywarnings=False):
     # open port
@@ -23,6 +24,7 @@ class x05:
     self.__s = serial.Serial(port, 9600)
     self.reset()
     self.testComm()
+
 
   def __exit__(self, type, value, traceback):
     self.close()
@@ -120,7 +122,7 @@ class x05:
     tr2=ord(self.__s.read(1))
     return [tr13,tr2,tr13]
 
-  def eraseTrack(self, tracks, coerc=1):
+  def eraseTracks(self, tracks, coerc=1):
     select = 0
     try:
       for i in [0,1,2]:
@@ -336,3 +338,22 @@ class x05:
       return True
     else:
       return self.__status(status)
+
+
+  def readRawText(self):
+    raise Exception ("not implemented")
+  #TODO
+    data=self.readRaw()
+  #... detect LZ, BPI and BPC
+  #.... decode data to human readable text according to lz, bpi and bpc
+  # return text
+
+  def writeRawText(self,text,bpi,bpc,lz):
+    raise Exception ("not implemented")
+  #TODO
+    self.setLZ(lz)
+    self.setBPI(bpi)
+    self.setBPC(bpc)
+  #.... prepare data from text according to given lz, bpi and bpc
+    self.__warn()
+  # return self.writeRaw(data)

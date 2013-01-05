@@ -11,6 +11,10 @@ device.setLED(7)
 print "Firmware Version: " + device.getFirmwareVersion()
 print "Device Model: " + device.getDeviceModel()
 print "Coercivity: " + ("High" if device.getCo() else "Low")
+lz=device.getLZ()
+border=str(round(lz[0]*25.4/210,1))
+middle=str(round(lz[1]*25.4/75,1))
+print "[LeadingZeros] Track1&3: "+border+"mm, Track2: "+middle+"mm"
 
 #print "Full self test (please swipe a card until green light blinks):",
 #sys.stdout.flush()
@@ -21,10 +25,13 @@ print "Coercivity: " + ("High" if device.getCo() else "Low")
 
 device.reset()
 
-#print device.setBPC([7,5,5]);
+#print device.setBPC([8,8,8]);
 #print device.setBPI([1,0,1]);
+#print device.setLZ([61,22]);
+
 #print device.writeISO(['%34XX%23_4?',None,';01234567890:;<=>0123?'])
-#print device.eraseTrack([1,1,1]);
+#print device.eraseTracks([1,1,1]);
+
 
 print "Please swipe the original to clone..."
 a = device.readRaw()
@@ -33,7 +40,7 @@ print "Please swipe the card to be written...",
 sys.stdout.flush()
 
 #this erases the tracks which are empty on the original
-if (device.eraseTrack(map(lambda x: len(x)==0,a))):
+if (device.eraseTracks(map(lambda x: len(x)==0,a))):
   print "again..."
   sys.stdout.flush()
 if device.writeRaw(a): print 'ok'
@@ -42,5 +49,6 @@ else: print 'failed'
 print "Please swipe the newly written card again to verify contents..."
 print device.readISO()
 
+#print device.writeRawText(['123','123','123'],[1,1,1],[5,5,5],[0,0,0])
 
 device.close()

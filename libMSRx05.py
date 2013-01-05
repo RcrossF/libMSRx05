@@ -2,188 +2,51 @@
 #
 # Library for accesing MSR205, MSR206, MSR505, MSR605, MSR606 and compatible MagStripe RW devices
 #
-# by Louis Bodnar, end of september 2012
-# rework by Kirils Solovjovs, 2013
+# Copyright Kirils Solovjovs, 2013
+# based on work by Louis Bodnar, end of september 2012
+
 
 import serial
 import binascii
 import time
 
 ESC = '\x1B'
-FS = '\x1C'
-ACK = '\x1B\x79'
+ACK = '\x1B\x30'
 
-RESET = '\x1B\x61'
-READ_ISO = '\x1B\x72'
-WRITE_ISO = '\x1B\x77'
-COMMUNICATIONS_TEST = '\x1B\x65'
-ALL_LED_OFF = '\x1B\x81'
-ALL_LED_ON = '\x1B\x82'
-GREEN_LED_ON = '\x1B\x83'
-YELLOW_LED_ON = '\x1B\x84'
-RED_LED_ON = '\x1B\x85'
-SENSOR_TEST = '\x1B\x86'
-RAM_TEST = '\x1B\x87'
+# TODO
+#
+#Commands not yet implented:
+#WRITE = '\x1B\x6E'
+#higher level raw processing functions
 
 class x05:
   def __init__(self, port):
     # open port
     self.__s = serial.Serial(port, 9600)
+    self.reset()
+    self.testComm()
 
-    # initialize (btw the programming manual has some of this stuff backwards)
-    self.__s.write(RESET)
-    self.__s.write(COMMUNICATIONS_TEST)
-
-    if (self.__s.read() != ESC):
-      print "could not init"
-
-    if (self.__s.read() != 'y'):
-      print "could not init"
-
-    self.__s.write(RESET)
-
-
-  def readIso(self):
-    self.__s.write(RESET)
-    self.__s.write(READ_ISO)
-    data = ['','','']
-    status = '\x00'
-
-
-    # read <esc>s<esc>
-
-    if (self.__s.read() != ESC):
-      print "expected byte mismatch"
-      return data
-
-
-    if (self.__s.read() != 's'):
-      print "expected byte mismatch"
-      return data
-
-    if (self.__s.read() != ESC):
-      print "expected byte mismatch"
-      return data
-
-
-
-
-    # next byte should be '\x01'
-    if (self.__s.read() == '\x01'):
-      data[0] = self.read_until(ESC)
-    else:
-      print "expected byte mismatch"
-      return data
-
-    # next byte should be '\x02'
-    if (self.__s.read() == '\x02'):
-      data[1] = self.read_until(ESC)
-    else:
-      print "expected byte mismatch"
-      return data
-
-    # next byte should be '\x03'
-    if (self.__s.read() == '\x03'):
-      data[2] = self.read_until(FS)
-    else:
-      print "expected byte mismatch"
-      return data
-
-    if (self.__s.read() != ESC):
-      print "expected byte mismatch"
-      return data
-
-    # check status
-    if (self.__s.read() != '\x30'):
-      print "got bad status, something bad may have happened"
-      return data
-
-    return data
-
-
-
-
-
-
-
-  def __setHiCo(self):
-    self.__s.write('\x1B\x78')
-    if (self.__s.read() != ESC):
-      print "expected byte mismatch"
-
-    # check status
-    if (self.__s.read() != '0'):
-      print "expected byte mismatch"
-
-
-
-
-
-
-  def __setLowCo(self):
-    self.__s.write('\x1B\x79')
-    if (self.__s.read() != ESC):
-      print "expected byte mismatch"
-
-    # check status
-    if (self.__s.read() != '0'):
-      print "expected byte mismatch"
-
-
-
-
-  def writeIsoHiCo(self, data):
-    self.__setHiCo()
-    self.__writeIso(data)
-
-
-  def writeIsoLowCo(self, data):
-    self.__setLowCo()
-    self.__writeIso(data)
-
-
-
-  def __writeIso(self, data): # TODO: add check for non-iso chars
-
-    # for whatever reason, it seems that the last char of the third track must be a ? or it wont go in to write mode
-    if (data[2][-1:] != '?'):
-      print "last char of track 3 not '?', fixing."
-      data[2] += '?'
-
-    # another quirk - the msr605 appends a % to the beginning of track one, so if you already have one, this deletes it (that way you wont end up with a bunch of duplicate % signs)
-    if (data[0][0] == '%'):
-      data[0] = data[0][1:]
-      
-    command = ''
-    command += ESC
-    command += '\x77'
-    command += ESC
-    command += '\x73'
-    command += ESC
-    command += '\x01'
-    command += data[0]
-    command += ESC
-    command += '\x02'
-    command += data[1]
-    command += ESC
-    command += '\x03'
-    command += data[2]
-    command += FS
-
-    self.__s.write(command)
-
-    if (self.__s.read() != ESC):
-      print "expected byte mismatch"
-
-    # check status
-    if (self.__s.read() != '\x30'):
-      print "got bad status, something bad may have happened"
-
+  def __exit__(self, type, value, traceback):
+    self.close()
 
   def close(self):
     self.__s.close
 
-  def read_until(self, byte):
+  def __status(self,c):
+    if (c=='0'):return "OK"
+    if (c=='1'):return "Read or write error"
+    if (c=='2'):return "Command misaligned"
+    if (c=='4'):return "Command invalid"
+    if (c=='9'):return "Card swiped too fast or too slow"
+
+  def __expect(self, stri,nonfatal=False):
+    a = self.__s.read(len(stri))
+    if nonfatal:
+      return (a == stri)
+    if (a != stri):
+      raise Exception("communication error; expected [" + binascii.hexlify(stri) + "] got [" + binascii.hexlify(a) + "]")
+
+  def __read_until(self, byte):
     b = ""
     d = ""
     while True:
@@ -192,220 +55,247 @@ class x05:
         return d
       d += b
 
-  def setBitsPerCharacter(self, bpc): # broken (I send the correct bits, it just wont give me the expected response)
-    if (bpc[0] < 5 or bpc[0] > 8):
-      print "track 1 bits wrong size (can be between 5 and 8 bits per character)"
-      return 0
-    if (bpc[1] < 5 or bpc[1] > 8):
-      print "track 2 bits wrong size (can be between 5 and 8 bits per character)"
-      return 0
-    if (bpc[2] < 5 or bpc[2] > 8):
-      print "track 3 bits wrong size (can be between 5 and 8 bits per character)"
-      return 0
-
-
-    command = ""
-    command += ESC
-    command += '\x6F'
-    command += ESC
-    command += '\x08' #str(bpc[0])
-    command += '\x08' #str(bpc[1])
-    command += '\x08' #str(bpc[2])
-    print "Command: " + command
-
-
-    self.__printHexToDebug(command)
-    self.__s.write(command)
-
-    self.__read(ESC)
-    self.__read('\x41')
-    self.__read('\x08')
-    self.__read(bpc[1])
-    self.__read(bpc[2])
-
-
-  def __read(self, byte):
-    a = self.__s.read()
-    if (a != byte):
-      print "Expected [" + binascii.hexlify(byte) + "] got [" + binascii.hexlify(a) + "]"
-      return 0
-    #print "got: " + "[" + binascii.hexlify(a) + "]"
-    return 1
-
-  def __printHexToDebug(self, toPrint):
-    hexd = ""
-    for a in toPrint:
-      hexd += "[" + binascii.hexlify(a) + "]"
-    print hexd
-
-
-
   def getFirmwareVersion(self):
-    command = ""
-    command += ESC
-    command += '\x76'
-
-    self.__s.write(command)
-
-    self.__read(ESC)
-
+    self.__s.write('\x1B\x76')
     time.sleep(.1)
-
+    self.__expect(ESC)
     version = ""
     while (self.__s.inWaiting()):
       version += self.__s.read()
-
     return version
 
-
-
   def getDeviceModel(self):
-    command = ""
-    command += ESC
-    command += '\x74'
-
-
-    self.__s.write(command)
-
-    self.__read(ESC)
-
+    self.__s.write('\x1B\x74')
     time.sleep(.1)
-
+    self.__expect(ESC)
     version = ""
     while (self.__s.inWaiting()):
       version += self.__s.read()
-
     if (version[-1:] != 'S'):
-      print "got back bad response"
-      return 0
-
+      raise Exception("communcation error")
     return version[:-1]
-     
+    
+  def reset(self):
+    self.__s.write('\x1B\x61')
+
+  def test(self):
+    return self.testComm() and self.testRAM() and self.testSensor()
+
+  def testComm(self):
+    self.__s.write('\x1B\x65')
+    return self.__expect(ESC+'y',True)
+
+  def testSensor(self):
+    self.__s.write('\x1B\x86')
+    return self.__expect(ACK,True)
+
+  def testRAM(self):
+    self.__s.write('\x1B\x87')
+    return self.__expect(ACK,True)
+
+  def setLED(self,bits): # R3 Y2 G1
+    if ( bits not in [0,1,2,4,7]):
+      raise Exception("Hardware does not support having 2 lights on");
+    if ( bits == 7 ): self.__s.write('\x1B\x82')
+    if ( bits == 0 ): self.__s.write('\x1B\x81')
+    if ( bits == 1 ): self.__s.write('\x1B\x83')
+    if ( bits == 2 ): self.__s.write('\x1B\x84')
+    if ( bits == 4 ): self.__s.write('\x1B\x85')
+
+  def setLZ(self,track):
+    try:
+      if(track[2] != track[0]):
+        raise Exception('Track3 must have the same Leading Zero count as Track1')
+    except IndexError:
+      pass
+    self.__s.write('\x1B\x7A'+chr(track[0])+chr(track[1]))
+    return self.__expect(ACK,True)
+
+  def getLZ(self):
+    self.__s.write('\x1B\x6C')
+    self.__expect('\x1B')
+    tr13=ord(self.__s.read(1))
+    tr2=ord(self.__s.read(1))
+    return [tr13,tr2,tr13]
+
+  def eraseTrack(self, tracks, coerc=1):
+    select = 0
+    try:
+      for i in [0,1,2]:
+        select += (tracks[i]>0)*(2**i)
+    except IndexError:
+      pass
+    if (select == 0):
+      return False
+    # [sic] writing \x01 to erase just Track1 works as well as writing \x00
+    self.__s.write('\x1B\x63'+chr(select))
+    return self.__expect(ACK,True)*select
+
+  def setBPC(self, bpc):
+  # fixed this. now it works
+    failed=False
+    try:
+      for i in [0,1,2]:
+        if (bpc[i] < 5 or bpc[i] > 8):
+          failed=True
+    except IndexError:
+      failed=True
+    if (failed):
+      raise Exception ("Please specify BPC (5-8) for all 3 tracks")
+
+    self.__s.write('\x1B\x6F'+chr(bpc[0])+chr(bpc[1])+chr(bpc[2]))
+    self.__expect(ACK)
+    return self.__expect(chr(bpc[0])+chr(bpc[1])+chr(bpc[2]),True)
 
 
-
-  def eraseCard(self, trackOne, trackTwo, trackThree):
-
-    command = ""
-    command += ESC
-    command += '\x63'
-
-    if (trackOne and not trackTwo and not trackThree):
-      command += '\x00'
-    elif (not trackOne and trackTwo and not trackThree):
-      command += '\x02'
-    elif (not trackOne and not trackTwo and trackThree):
-      command += '\x04'
-    elif (trackOne and trackTwo and not trackThree):
-      command += '\x03'
-    elif (not trackOne and not trackTwo and trackThree):
-      command += '\x05'
-    elif (not trackOne and trackTwo and trackThree):
-      command += '\x06'
-    elif (trackOne and trackTwo and trackThree):
-      command += '\x07'
+  def setBPI(self, bpi):
+    failed=False
+    try:
+      for i in [0,1,2]:
+        if (bpi[i] is not None and bpi[i] != 0 and bpi[i] != 1):
+          failed=True
+    except IndexError:
+      failed=True
+    if (failed):
+      raise Exception ("Please specify BPI (high(1) or low(0), or as-is(None)) for all 3 tracks")
+    result=True
+    for i in [0,1,2]:
+      if (bpi[i] is not None):
+        result &= self.__setBPI(i+1,bpi[i])
+    return result
 
 
-    self.__printHexToDebug(command)    
+  def __setBPI(self, track, bpi):
+    if(track==1 and bpi==0): code='\xA0'
+    elif(track==1 and bpi==1): code='\xA1'
+    elif(track==2 and bpi==0): code='\x4B'
+    elif(track==2 and bpi==1): code='\xD2'
+    elif(track==3 and bpi==0): code='\xC0'
+    elif(track==3 and bpi==1): code='\xC1'
+    else: code='\xFF'
+
+    self.__s.write('\x1B\x62'+code)
+    return self.__expect(ACK,True)
+
+
+  # you should hear a click when changing coercivity
+  def setHiCo(self):
+    self.__s.write('\x1B\x78')
+    return self.__expect(ACK,True)
+
+  def setLoCo(self):
+    self.__s.write('\x1B\x79')
+    return self.__expect(ACK,True)
+
+  def getCo(self):
+    self.__s.write('\x1B\x64')
+    r = self.__s.read(2)
+    if (r == ESC+'h'):
+      return 1
+    if (r == ESC+'l'):
+       return 0
+    raise Exception('communcation error')
+
+
+  def readISO(self):
+    self.reset()
+    self.__s.write('\x1B\x72')
+    data = ['','','']
+    status = [0,0,0]
+    
+    self.__expect('\x1B\x73')
+    self.__expect(ESC)
+    for track in [0,1,2]:
+      self.__expect(chr(track+1))
+      data[track] = self.__read_until(ESC)
+      if (len(data[track])==0):
+        status[track] = self.__s.read()
+        if (track == 2):
+          self.__expect('\x3F\x1C');
+        self.__expect(ESC)
+
+    if(status[2] == 0):
+      data[2] = data[2][:-2]
+
+    # check status
+    result=self.__s.read();
+    if (result== '0'):
+      return data
+    else:
+      status.insert(0,result)
+      status.insert(0,self.__status(result))
+      status.extend(data)
+      return status # ERRORCODE, ERRORSTRING, eTR1, eTR2, eTR3 ( '+' empty track, '*' error reading), TR1, TR2, TR3
+
+
+  def writeISO(self, data):
+    print "WARNING - WRITING MODE, coerc="+ ("high" if self.getCo() else "low") #DEBUG FIXME
+    fcount = 0
+    while(len(data)<3):
+      data.append('')
+
+    for i in [0,1,2]:
+      if data[i] is None: data[i]=''
+      if (len(data[i])>0):
+        fcount += 1
+        if (len(data[i])<2 or data[i][0] != (';' if i else '%') or data[i][-1] != '?'):
+          raise Exception("Track"+chr(0x30+1+i)+" is not ISO formatted")
+        else:
+          data[i] = data[i][1:-1]
+
+    if not fcount:
+      raise Exception("Nothing to write")
+
+
+    #checking for ISO chars
+    #track1 = 0x20 - x05f except ?
+    #track2 or 3 = 0x30 - 0x3f except ?
+    str1 = []
+    str23 = []
+    for c in filter(lambda x:x!=0x3f,range(0x20,0x60)):
+      str1.append(chr(c))
+    for c in range (0x30,0x3f):
+      str23.append(chr(c))
+
+    for i in [0,1,2]:
+     if not set(data[i]).issubset(str23 if i else str1):
+       raise Exception("Track"+chr(0x30+1+i)+" contains illegal characters")
+
+    command = ESC+'\x77'+ESC+'\x73'
+    for i in [0,1,2]:
+      command += ESC+chr(i+1)+data[i]
+    command += '?\x1C'
+
     self.__s.write(command)
-    self.__read(ESC)
-    isOK = self.__s.read()
+    self.__expect(ESC)
 
-
-    if (isOK == '\x30'):
+    # check status
+    status=self.__s.read()
+    if (status ==  '0'):
       return True
-
-    return False
-
-
-  def __whatsInMyBuffer(self):
-
-    a = self.__s.read()
-    time.sleep(.01)
-    while (self.__s.inWaiting()):
-      a += self.__s.read()
-      time.sleep(.01)
-    self.__printHexToDebug(a)
-    return
-
-
+    else:
+      return self.__status(status)
 
 
   def readRaw(self):
-    command = ""
-    command += ESC
-    command += '\x6D'
-    self.__s.write(command)
+    self.__s.write('\x1B\x6D')
+    self.__expect('\x1B\x73')
 
+    data=['','','']
+    for track in [0,1,2]:
+      self.__expect(ESC+chr(track+1))
+      length = ord(self.__s.read())
+      if length>0:
+        data[track] = self.__s.read(length)
 
-    self.__read(ESC)
-    self.__read('\x73')
+    self.__expect('\x3F\x1C\x1B');
 
-
-    self.__read(ESC)
-    self.__read('\x01')
-    length = int(binascii.hexlify(self.__s.read()), 16)
-    trackOne = []
-    while (length > 0):
-      length -= 1
-      trackOne.append(self.__s.read())
-
-
-    self.__read(ESC)
-    self.__read('\x02')
-    length = int(binascii.hexlify(self.__s.read()), 16)
-    trackTwo = []
-    while (length > 0):
-      length -= 1
-      trackTwo.append(self.__s.read())
-
-
-    self.__read(ESC)
-    self.__read('\x03')
-    length = int(binascii.hexlify(self.__s.read()), 16)
-    trackThree = []
-    while (length > 0):
-      length -= 1
-      trackThree.append(self.__s.read())
-
-    return ["".join(trackOne), "".join(trackTwo), "".join(trackThree)]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    result=self.__s.read();
+    if (result== '0'):
+      return data
+    else:
+      data.insert(0,result)
+      data.insert(0,self.__status(result))
+      return data # ERRORCODE, ERRORSTRING, TR1, TR2, TR3
 
 

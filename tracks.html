@@ -1,0 +1,676 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html>
+
+
+<head>
+
+<title>Track format of magnetic stripe cards</title>
+
+</head>
+
+
+<body>
+
+<center><h1>Track format of magnetic stripe cards</h1></center><p>
+<center><h4>by</h4></center>
+<center><h3>L. Padilla</h3></center><p>
+
+<dd>This page contains an explanation about the format of the three magnetic
+tracks in standard identification cards, particularly those used in financial
+transactions, i.e., credit and debit cards. It is a summary of the
+international standards <a href=
+"http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=31441&ICS1=35&ICS2=240&ICS3=15">
+ISO 7813</a> (tracks 1 and 2) and <a href=
+"http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=33583&ICS1=35&ICS2=240&ICS3=15">
+ISO 4909</a> (track 3).<br>
+
+<ul>
+<li>Track 1 (IATA)<br><br>
+
+  Up to 79 ALPHA 7-bit (including parity) characters (alphanumeric) including
+  SS, ES and LRC. Read only. It comprises the following fields (in this order):
+  <br><br>
+
+  <ul>
+  <li>SS: Start Sentinel. 1 character: %.<br><br>
+
+  <li>FC: Format Code. 1 character (alphabetic only):<br><br>
+
+      A: Reserved for proprietary use of card issuer.<br>
+      B: Bank/financial. This is the format described here.<br>
+      C-M: Reserved for use by ANSI Subcommittee X3B10.<br>
+      N-Z: Available for use by individual card issuers.<br><br>
+
+  <li>PAN: Primary Account Number. Up to 19 digits:<br><br>
+
+      In accordance with the account numbering scheme in <a href=
+"http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=31443&ICS1=35&ICS2=240&ICS3=15">
+      ISO 7812.</a><br><br>
+
+      It consists of the following parts:<br><br>
+
+      <ul>
+      <li>IIN: Issuer Identification Number. Up to 6 digits:<br><br>
+
+          It consists of the following parts:<br><br>
+
+          <ul>
+          <li>MII: Major Industry Identifier. Up to 2 digits:<br><br>
+
+              0: Reserved for future use by ISO/TC 68.<br>
+              00: Institutions other than card issuers.<br>
+              1: Airlines.<br>
+              2: Airlines and other future assignments.<br>
+              3: Travel and entertainment.<br>
+              4: Banking/financial.<br>
+              5: Banking/financial.<br>
+              59: Financial institutions not registered by ISO.<br>
+              6: Merchandising and banking.<br>
+              7: Petroleum.<br>
+              8: Telecommunications and other future assignments.<br>
+              89: Telecommunications administrations and private operating
+              agencies.<br>
+              9: Reserved for national use.<br><br>
+
+          <li>II: Issuer Identifier. Up to 5 digits:<br><br>
+
+              Identifies the issuer. In some cases the first digit indicates
+              the length of the IIN or the responsibility of its assignment
+              outside of ISO. If MII = 9 then the first 3 digits should be the
+              country code (CC).<br><br>
+          </ul>
+
+      <li>IAI: Individual Account Identification. Up to 12 digits:<br><br>
+
+          Assigned by the card issuing institution.<br><br>
+
+      <li>CD: Check Digit. 1 digit:<br><br>
+
+          Calculated using the Luhn formula for computing modulus 10
+          "double-add-double" check digit: Double the value of alternate (odd)
+          digits starting by the least significant (first right hand) digit.
+          Then add the individual digits of doubled (odd) numbers and even
+          digits of the original number. If the value ends in 0 then the check
+          digit is 0. Otherwise subtract the value from the next higher number
+          ending in 0 (tens complement of the unit digit). The result is the
+          check digit. Example: If the account number without check digit is
+          1234 5678 9012 344 then (8) + 4 + (6) + 2 + (2) + 0 + (1 + 8) + 8 +
+          (1 + 4) + 6 + (1 + 0) + 4 + (6) + 2 + (2) = 65, therefore the check
+          digit is 70 - 65 = 5 and so the complete account number is
+          1234 5678 9012 3445.<br><br>
+      </ul>
+
+      MasterCard PAN is variable up to 16 digits and VISA is 13 or 16 digits,
+      including check digit.<br><br>
+
+  <li>FS: Field Separator. 1 character: ^.<br><br>
+
+  <li>CC: Country Code. 3 digits:<br><br>
+
+      Only if PAN starts with 59 (MasterCard).<br><br>
+
+      <a href="country.txt">Country codes</a> are defined in <a href=
+"http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=24591&ICS1=1&ICS2=140&ICS3=30">
+      ISO 3166</a>: 724 for Spain, 840 for USA, etc.<br><br>
+
+  <li>NM: Name. 2-26 characters:<br><br>
+
+      Surname(s) (separated by space if necessary).<br>
+      Surname separator: /.<br>
+      First name(s) or initial(s) (separated by space if necessary).<br>
+      Period (when followed by title).<br>
+      Title (when used).<br><br>
+
+      If this field is not used the content will be an space followed by a
+      surname separator (/).<br><br>
+
+  <li>FS: Field Separator. 1 character: ^.<br><br>
+
+  <li>ED: Expiry Date. 4 digits: YYMM.<br><br>
+
+      If this field is not used a FS will be in place.<br><br>
+
+      Required by MasterCard and VISA.<br><br>
+
+  <li>SC: Service Code. 3 digits:<br><br>
+
+      Digit 1 (most significant): Interchange and technology:<br><br>
+
+      0: Reserved for future use by ISO.<br>
+      1: Available for international interchange.<br>
+      2: Available for international interchange and with integrated circuit,
+      which should be used for the financial transaction when feasible.<br>
+      3: Reserved for future use by ISO.<br>
+      4: Reserved for future use by ISO.<br>
+      5: Available for national interchange only, except under bilateral
+      agreement.<br>
+      6: Available for national interchange only, except under bilateral
+      agreement, and with integrated circuit, which should be used for the
+      financial transaction when feasible.<br>
+      7: Not available for general interchange, except under bilateral
+      agreement.<br>
+      8: Reserved for future use by ISO.<br>
+      9: Test.<br><br>
+
+      Digit 2: Authorization processing:<br><br>
+
+      0: Transactions are authorized following the normal rules.<br>
+      1: Reserved for future use by ISO.<br>
+      2: Transactions are authorized by issuer and should be online.<br>
+      3: Reserved for future use by ISO.<br>
+      4: Transactions are authorized by issuer and should be online, except
+      under bilateral agreement.<br>
+      5: Reserved for future use by ISO.<br>
+      6: Reserved for future use by ISO.<br>
+      7: Reserved for future use by ISO.<br>
+      8: Reserved for future use by ISO.<br>
+      9: Reserved for future use by ISO.<br><br>
+
+      Digit 3 (least significant): Range of services and PIN requirements:<br>
+      <br>
+
+      0: No restrictions and PIN required.<br>
+      1: No restrictions.<br>
+      2: Goods and services only (no cash).<br>
+      3: ATM only and PIN required.<br>
+      4: Cash only.<br>
+      5: Goods and services only (no cash) and PIN required.<br>
+      6: No restrictions and require PIN when feasible.<br>
+      7: Goods and services only (no cash) and require PIN when feasible.<br>
+      8: Reserved for future use by ISO.<br>
+      9: Reserved for future use by ISO.<br><br>
+
+      If this field in not used a FS will be in place.<br><br>
+
+      Required by MasterCard and VISA.<br><br>
+
+  <li>PVV: Offset or PVV (PIN Verification Value). 5 digits:<br><br>
+
+      Required by MasterCard and VISA.<br><br>
+
+  <li>DD: Discretionary Data. Rest of characters:<br><br>
+
+      Reserved for proprietary use of card issuer.<br><br>
+
+  <li>ES: End Sentinel. 1 character: ?.<br><br>
+
+  <li>LRC: Longitude Redundancy Check. 1 character.<br><br>
+  </ul>
+
+<li>Track 2 (ABA)<br><br>
+
+  Up to 40 BCD 5-bit (including parity) characters (numeric) including SS, ES
+  and LRC. Read only. It comprises the following fields (in this order):<br>
+  <br>
+
+  <ul>
+  <li>SS: Start Sentinel. 1 character: ;.<br><br>
+
+  <li>PAN: Primary Account Number. Up to 19 digits:<br><br>
+
+      In accordance with the account numbering scheme in <a href=
+"http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=31443&ICS1=35&ICS2=240&ICS3=15">
+      ISO 7812.</a><br><br>
+
+      It consists of the following parts:<br><br>
+
+      <ul>
+      <li>IIN: Issuer Identification Number. Up to 6 digits:<br><br>
+
+          It consists of the following parts:<br><br>
+
+          <ul>
+          <li>MII: Major Industry Identifier. Up to 2 digits:<br><br>
+
+              0: Reserved for future use by ISO/TC 68.<br>
+              00: Institutions other than card issuers.<br>
+              1: Airlines.<br>
+              2: Airlines and other future assignments.<br>
+              3: Travel and entertainment.<br>
+              4: Banking/financial.<br>
+              5: Banking/financial.<br>
+              59: Financial institutions not registered by ISO.<br>
+              6: Merchandising and banking.<br>
+              7: Petroleum.<br>
+              8: Telecommunications and other future assignments.<br>
+              89: Telecommunications administrations and private operating
+              agencies.<br>
+              9: Reserved for national use.<br><br>
+
+          <li>II: Issuer Identifier. Up to 5 digits:<br><br>
+
+              Identifies the issuer. In some cases the first digit indicates
+              the length of the IIN or the responsibility of its assignment
+              outside of ISO. If MII = 9 then the first 3 digits should be the
+              country code (CC).<br><br>
+          </ul>
+
+      <li>IAI: Individual Account Identification. Up to 12 digits:<br><br>
+
+          Assigned by the card issuing institution.<br><br>
+
+      <li>CD: Check Digit. 1 digit:<br><br>
+
+          Calculated using the Luhn formula for computing modulus 10
+          "double-add-double" check digit: Double the value of alternate (odd)
+          digits starting by the least significant (first right hand) digit.
+          Then add the individual digits of doubled (odd) numbers and even
+          digits of the original number. If the value ends in 0 then the check
+          digit is 0. Otherwise subtract the value from the next higher number
+          ending in 0 (tens complement of the unit digit). The result is the
+          check digit. Example: If the account number without check digit is
+          1234 5678 9012 344 then (8) + 4 + (6) + 2 + (2) + 0 + (1 + 8) + 8 +
+          (1 + 4) + 6 + (1 + 0) + 4 + (6) + 2 + (2) = 65, therefore the check
+          digit is 70 - 65 = 5 and so the complete account number is
+          1234 5678 9012 3445.<br><br>
+      </ul>
+
+      MasterCard PAN is variable up to 16 digits and VISA is 13 or 16 digits,
+      including check digit.<br><br>
+
+  <li>FS: Field Separator. 1 character: =.<br><br>
+
+  <li>CC: Country Code. 3 digits:<br><br>
+
+      Only if PAN starts with 59 (MasterCard).<br><br>
+
+      <a href="country.txt">Country codes</a> are defined in <a href=
+"http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=24591&ICS1=1&ICS2=140&ICS3=30">
+      ISO 3166</a>: 724 for Spain, 840 for USA, etc.<br><br>
+
+  <li>ED: Expiry Date. 4 digits: YYMM.<br><br>
+
+      If this field is not used a FS will be in place.<br><br>
+
+      Required by MasterCard and VISA.<br><br>
+
+  <li>SC: Service Code. 3 digits:<br><br>
+
+      Digit 1 (most significant): Interchange and technology:<br><br>
+
+      0: Reserved for future use by ISO.<br>
+      1: Available for international interchange.<br>
+      2: Available for international interchange and with integrated circuit,
+      which should be used for the financial transaction when feasible.<br>
+      3: Reserved for future use by ISO.<br>
+      4: Reserved for future use by ISO.<br>
+      5: Available for national interchange only, except under bilateral
+      agreement.<br>
+      6: Available for national interchange only, except under bilateral
+      agreement, and with integrated circuit, which should be used for the
+      financial transaction when feasible.<br>
+      7: Not available for general interchange, except under bilateral
+      agreement.<br>
+      8: Reserved for future use by ISO.<br>
+      9: Test.<br><br>
+
+      Digit 2: Authorization processing:<br><br>
+
+      0: Transactions are authorized following the normal rules.<br>
+      1: Reserved for future use by ISO.<br>
+      2: Transactions are authorized by issuer and should be online.<br>
+      3: Reserved for future use by ISO.<br>
+      4: Transactions are authorized by issuer and should be online, except
+      under bilateral agreement.<br>
+      5: Reserved for future use by ISO.<br>
+      6: Reserved for future use by ISO.<br>
+      7: Reserved for future use by ISO.<br>
+      8: Reserved for future use by ISO.<br>
+      9: Reserved for future use by ISO.<br><br>
+
+      Digit 3 (least significant): Range of services and PIN requirements:<br>
+      <br>
+
+      0: No restrictions and PIN required.<br>
+      1: No restrictions.<br>
+      2: Goods and services only (no cash).<br>
+      3: ATM only and PIN required.<br>
+      4: Cash only.<br>
+      5: Goods and services only (no cash) and PIN required.<br>
+      6: No restrictions and require PIN when feasible.<br>
+      7: Goods and services only (no cash) and require PIN when feasible.<br>
+      8: Reserved for future use by ISO.<br>
+      9: Reserved for future use by ISO.<br><br>
+
+      If this field in not used a FS will be in place.<br><br>
+
+      Required by MasterCard and VISA.<br><br>
+
+  <li>PVV: Offset or PVV (PIN Verification Value). 5 digits:<br><br>
+
+      Required by MasterCard and VISA.<br><br>
+
+  <li>DD: Discretionary Data. Rest of characters:<br><br>
+
+      Reserved for proprietary use of card issuer.<br><br>
+
+  <li>ES: End Sentinel. 1 character: ?.<br><br>
+
+  <li>LRC: Longitude Redundancy Check. 1 character.<br><br>
+  </ul>
+
+<li>Track 3 (THRIFT-TTS)<br><br>
+
+  Up to 107 BCD 5-bit (including parity) characters (numeric) including SS, ES
+  and LRC. Read and write. It comprises the following fields (in this order):
+  <br><br>
+
+  <ul>
+  <li>SS: Start Sentinel. 1 character: ;.<br><br>
+
+  <li>FC: Format Code. 2 digits:<br><br>
+
+      00: Not valid for international interchange.<br>
+      01-02: Bank/financial. These are the formats described here.<br>
+      03-19: Reserved for future use by ISO/TC 68.<br>
+      20-89: Reserved for future use by ISO/TC 95 SC 17.<br>
+      90-99: Reserved for proprietary use of card issuer, but not for
+      international interchange.<br><br>
+
+  <li>PAN: Primary Account Number. Up to 19 digits:<br><br>
+
+      In accordance with the account numbering scheme in <a href=
+"http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=31443&ICS1=35&ICS2=240&ICS3=15">
+      ISO 7812.</a><br><br>
+
+      It consists of the following parts:<br><br>
+
+      <ul>
+      <li>IIN: Issuer Identification Number. Up to 6 digits:<br><br>
+
+          It consists of the following parts:<br><br>
+
+          <ul>
+          <li>MII: Major Industry Identifier. Up to 2 digits:<br><br>
+
+              0: Reserved for future use by ISO/TC 68.<br>
+              00: Institutions other than card issuers.<br>
+              1: Airlines.<br>
+              2: Airlines and other future assignments.<br>
+              3: Travel and entertainment.<br>
+              4: Banking/financial.<br>
+              5: Banking/financial.<br>
+              59: Financial institutions not registered by ISO.<br>
+              6: Merchandising and banking.<br>
+              7: Petroleum.<br>
+              8: Telecommunications and other future assignments.<br>
+              89: Telecommunications administrations and private operating
+              agencies.<br>
+              9: Reserved for national use.<br><br>
+
+          <li>II: Issuer Identifier. Up to 5 digits:<br><br>
+
+              Identifies the issuer. In some cases the first digit indicates
+              the length of the IIN or the responsibility of its assignment
+              outside of ISO. If MII = 9 then the first 3 digits should be the
+              country code (CC).<br><br>
+          </ul>
+
+      <li>IAI: Individual Account Identification. Up to 12 digits:<br><br>
+
+          Assigned by the card issuing institution.<br><br>
+
+      <li>CD: Check Digit. 1 digit:<br><br>
+
+          Calculated using the Luhn formula for computing modulus 10
+          "double-add-double" check digit: Double the value of alternate (odd)
+          digits starting by the least significant (first right hand) digit.
+          Then add the individual digits of doubled (odd) numbers and even
+          digits of the original number. If the value ends in 0 then the check
+          digit is 0. Otherwise subtract the value from the next higher number
+          ending in 0 (tens complement of the unit digit). The result is the
+          check digit. Example: If the account number without check digit is
+          1234 5678 9012 344 then (8) + 4 + (6) + 2 + (2) + 0 + (1 + 8) + 8 +
+          (1 + 4) + 6 + (1 + 0) + 4 + (6) + 2 + (2) = 65, therefore the check
+          digit is 70 - 65 = 5 and so the complete account number is
+          1234 5678 9012 3445.<br><br>
+      </ul>
+
+      MasterCard PAN is variable up to 16 digits and VISA is 13 or 16 digits,
+      including check digit.<br><br>
+
+      If track 3 is to be used together with track 2 then PAN is an optional
+      field.<br><br>
+
+  <li>FS: Field Separator. 1 character: =.<br><br>
+
+  <li>CC: Country Code. 3 digits:<br><br>
+
+      <a href="country.txt">Country codes</a> are defined in <a href=
+"http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=24591&ICS1=1&ICS2=140&ICS3=30">
+      ISO 3166</a>: 724 for Spain, 840 for USA, etc.<br><br>
+
+      If this field in not used a FS will be in place.<br><br>
+
+  <li>CuC: Currency Code. 3 digits:<br><br>
+
+      <a href="currency.txt">Currency codes</a> are defined in <a href=
+"http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=34749&ICS1=3&ICS2=60&ICS3=">
+      ISO 4217</a>: 724 for Spanish peseta, 840 for US dollar, etc.<br><br>
+
+      If 3 zeros (000) are written in this field it means card not valid for
+      international interchange.<br><br>
+
+  <li>CE: Currency Exponent. 1 digit:<br><br>
+
+      0-5: Power of ten by which multiply the currency amount fields (AA and
+      AR) to get their actual values in the currency of the CuC field.<br><br>
+
+  <li>AA: Amount Authorized per cycle. 4 digits:<br><br>
+
+      Maximum amount of money permitted in one cycle.<br><br>
+
+      If 4 zeros (0000) are written in this field it means card not valid for
+      charge operations (no debit).<br><br>
+
+  <li>AR: Amount Remaining this cycle. 4 digits:<br><br>
+
+      Maximum amount of money permitted in this cycle. This field is dynamic,
+      it is initialized with the value of the AA field the first time the card
+      is used in a new cycle. Then it is modified accordingly.<br><br>
+
+  <li>CB: Cycle Begin (Validity Date). 4 digits:<br><br>
+
+      Date in which actual cycle began. The format is YDDD where Y stands for
+      the least significant digit of the year and DDD is the day of the year
+      (001 to 366). The field must be updated each time a new cycle begin.<br>
+      <br>
+
+      Alternatively this field may indicate the date from which the card is
+      valid.<br><br>
+
+  <li>CL: Cycle Length. 2 digits:<br><br>
+
+      00: Infinite, AR should be decremented but never reset.<br>
+      01-79: Number of days.<br>
+      80: Cycle begin each 7 days.<br>
+      81: Cycle begin each 14 days.<br>
+      82: Cycle begins each 1st and 15th days of every month.<br>
+      83: Cycle begins the day of the month specified in CB of every month.<br>
+      84: Cycle begins the day of the month specified in CB of every third
+      month.<br>
+      85: Cycle begins the day of the month specified in CB of every sixth
+      month.<br>
+      86: Cycle begins the day of the year specified in CB of every year.<br>
+      87-89: Reserved for future use by ISO/TC 68.<br>
+      90-99: Reserved for proprietary use of card issuer, but not for
+      international interchange.<br><br>
+
+      This field represents the duration of the cycle for which the AA limit
+      holds.<br><br>
+
+  <li>RC: Retry Count. 1 digit:<br><br>
+
+      Number of remaining PIN trials. It is initialized to 3 and reduced by one
+      unit after every wrong PIN entered. It is reset to 3 after a successful
+      PIN introduction. When this field reaches 0 the card is invalid for any
+      interchange purpose.<br><br>
+
+  <li>PINCP: PIN Control Parameters (PINPARM). 6 digits:<br><br>
+
+      If FC = 01 the two first digits represent the algorithm used to calculate
+      PIN, where 00-09 mean private algorithm, 10-19 mean DEA and values 20 to
+      99 are reserved for future use by ISO/TC 68. Next 4 digits are PIN
+      offset, a complementary value of PIN so customers can change their PIN,
+      or PVV.<br><br>
+
+      If FC = 02 the first digit represents the algorithm used to calculate
+      PIN, where 0 means private algorithm, 1 means DEA and values 2 to 9 are
+      reserved for future use by ISO/TC 68. The second digit represents a key
+      for the algorithm. Next 4 digits are PIN offset, a complementary value of
+      PIN so customers can change their PIN, or PVV.<br><br>
+
+      If this field is not used a FS will be in place.<br><br>
+
+  <li>IC: Interchange Control. 1 digit:<br><br>
+
+      0: No restriction.<br>
+      1: Not available for international interchange.<br>
+      2-8: Limited interchange, only local use and under agreement.<br>
+      9: Limited interchange, recommended for test cards.<br><br>
+
+  <li>PANSR: PAN Service Restriction. 2 digits:<br><br>
+
+      The first digit defines the type of account:<br><br>
+
+      0: Associated account number not encoded on track.<br>
+      1: Savings account.<br>
+      2: Current or checking account.<br>
+      3: Credit card account.<br>
+      4: Generic or universal account.<br>
+      5: Interest-bearing current or checking account.<br>
+      6-8: Reserved for future use by ISO/TC 68.<br>
+      9: Reserved for card issuer's internal use, not for interchange.<br><br>
+
+      The second digit defines the service restrictions:<br><br>
+
+      0: No restrictions.<br>
+      1: No cash dispense.<br>
+      2: No point of sale (POS) transaction.<br>
+      3: No cash dispense and no POS transaction.<br>
+      4: Authorization required.<br>
+      5-7: Reserved for future use by ISO/TC 68.<br>
+      8-9: Reserved for card issuer's internal use, only local use and under
+      agreement.<br><br>
+
+  <li>FSANSR: FSAN Service Restriction. 2 digits:<br><br>
+
+      Same values and meaning as for PANSR field.<br><br>
+
+  <li>SSANSR: SSAN Service Restriction. 2 digits:<br><br>
+
+      Same values and meaning as for PANSR field.<br><br>
+
+  <li>ED: Expiry Date. 4 digits: YYMM.<br><br>
+
+      If this field is not used a FS will be in place.<br><br>
+
+  <li>CSN: Card Sequence Number. 1 digit:<br><br>
+
+      Allows to distinguish among different cards with the same PAN. It is
+      incremented by one unit in any additional card.<br><br>
+
+      If FC = 02 and a FS is in place it means that field ACSN is present.<br>
+      <br>
+
+  <li>CScN: Card Security Number. 9 digits:<br><br>
+
+      The first digit represents the algorithm used to calculate a verification
+      value to validate the information on the magnetic track against the
+      embossed characters, where 0-4 are available for national use, 5-8 are
+      available for international security methods given by ISO/TC 68, and 9 is
+      reserved for private use. Next 8 digits are the verification value.<br>
+      <br>
+
+      If this field in not used a FS will be in place.<br><br>
+
+  <li>FSAN: First Subsidiary Account Number. Variable number of digits:<br><br>
+
+      This is an optional field.<br><br>
+
+  <li>FS: Field Separator. 1 character: =.<br><br>
+
+  <li>SSAN: Second Subsidiary Account Number. Variable number of digits:<br>
+  <br>
+
+      This is an optional field.<br><br>
+
+  <li>FS: Field Separator. 1 character: =.<br><br>
+
+  <li>RM: Relay Marker. 1 digit:<br><br>
+
+      0: Include AD and DD fields in transactions messages.<br>
+      1: Do not include AD field in transactions messages.<br>
+      2: Do not include DD field in transactions messages.<br>
+      3-9: Invalid.<br><br>
+
+  <li>CCD: Crypto Check Digits. 6 digits:<br><br>
+
+      A validation value which permits integrity verification of the magnetic
+      stripe content.<br><br>
+
+      If this field in not used a FS will be in place.<br><br>
+
+  <li>AD: Additional Data. Rest of characters:<br><br>
+
+      Optional field reserved for proprietary use of card issuer if FC = 01.
+      <br><br>
+
+      If FC = 02 the following subfields are required:<br><br>
+
+      <ul>
+      <li>TD: Transaction Date. 4 digits:<br><br>
+
+          Date of last cash dispense. The format is YDDD where Y stands for the
+          least significant digit of the year and DDD is the day of the year
+          (001 to 366).<br><br>
+
+          If this field in not used a FS will be in place.<br><br>
+
+      <li>AVV: Additional Verification Value(s). 8 digits:<br><br>
+
+          Validation of the PIN or two additional PINs corresponding to
+          different keys of the same algorithm. It can be an eight digit value,
+          two four digit numbers or, in connection with the last four digits of
+          the PINCP field, two six digit numbers.<br><br>
+
+          If this field in not used a FS will be in place.<br><br>
+
+      <li>ACSN: Alternative Card Sequence Number. 3 digits:<br><br>
+
+          Same purpose as CSN field but it allows for a maximum of 1000
+          different cards instead of 10.<br><br>
+
+          If this field in not used a FS will be in place.<br><br>
+
+      <li>INIC: International Network Identification Code. 3 digits:<br><br>
+
+          Code for identification of an international group of issuers, when
+          the IIN can not be used. It is equivalent to the term Network
+          International Identifier used in <a href=
+"http://www.iso.ch/iso/en/CatalogueDetailPage.CatalogueDetail?CSNUMBER=15871&ICS1=35&ICS2=240&ICS3=15">ISO 8583.</a><br><br>
+
+          If this field in not used a FS will be in place.<br><br>
+
+      <li>DD: Discretionary Data. Rest of characters:<br><br>
+
+          Optional field reserved for proprietary use of card issuer.<br><br>
+      </ul>
+
+  <li>ES: End Sentinel. 1 character: ?.<br><br>
+
+  <li>LRC: Longitude Redundancy Check. 1 character.<br><br>
+  </ul>
+</ul><p>
+
+<hr>
+<address>E-mail: <a href="mailto:padilla at domain gae ucm es">padilla at
+domain "gae ucm es"</a>
+</address>
+<i>First version: 21-Dec-2001, <b>last update: 12-Dec-2002</b></i><br>
+<i>This link: http://www.gae.ucm.es/~padilla/extrawork/tracks.html</i><br>
+
+</body>
+
+
+</html>

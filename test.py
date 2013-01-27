@@ -23,15 +23,17 @@ print "[LeadingZeros] Track1&3: "+border+"mm, Track2: "+middle+"mm"
 #else:
 #  print 'FAILED'
 
-device.reset()
-
-#print device.setBPC([8,6,6]);
-#print device.setBPI([1,0,1]);
+#print device.setBPC([7,5,5]);
+#print device.setBPI([1,1,1]);
 #print device.setLZ([61,22]);
 
 #print device.writeISO(['%34XX%23_4?',None,';01234567890:;<=>0123?'])
 #print device.eraseTracks([1,1,1]);
 
+#a=device.readISO()
+#print a
+#print device.writeISO(a)
+#exit(0)
 
 print "Please swipe the original to clone..."
 a = device.readRaw()

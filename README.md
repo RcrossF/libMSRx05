@@ -1,6 +1,6 @@
 libMSRx05
 ======
-Forked from 0ki to add python3 support and fix some bugs I was running into. It's still far from perfect but was all I needed for my project.
+Forked from 0ki to add python3 support and fix some bugs I was running into. It's still far from perfect, somewhat intuitive, and messy, but gets the job done.
 
 Pyhton library for interfacing MSRx05 and MSRx06 Magnetic Stripe Card Readers/Writers
 
